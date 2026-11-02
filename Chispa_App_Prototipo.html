@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chispa — App del cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#13213C; --muted:#5B6577; --ground:#F3F5F7; --card:#FFFFFF;
+    --amber:#FFC233; --amber-soft:#FFE7A3; --alert:#A3400A; --alert-soft:#FFF1E6;
+    --blue:#1D5FA8; --blue-soft:#E5EEF8; --line:#E4E8EE; --track:#D5DAE2; --over:#E07A2E;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:#DDE2E9; font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px 16px;
+    min-height:100%;
+  }
+  .caption{font-size:13px;color:#3F4A5C;font-weight:600;text-align:center}
+  .phone{
+    width:390px; height:844px; max-width:100%; background:var(--ground); border-radius:40px; overflow:hidden;
+    display:flex; flex-direction:column; box-shadow:0 30px 60px rgba(19,33,60,.25), 0 0 0 10px #13213C;
+  }
+  @media (max-width:430px){
+    body{padding:0;background:var(--ground);justify-content:flex-start}
+    .caption{display:none}
+    .phone{width:100%;height:100vh;height:100dvh;border-radius:0;box-shadow:none}
+  }
+  header{padding:22px 20px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:36px;height:36px;border-radius:12px;background:var(--amber);display:flex;align-items:center;justify-content:center}
+  .brand b{display:block;font-size:18px;font-weight:800;letter-spacing:-.3px}
+  .brand small{font-size:12px;color:var(--muted);font-weight:500}
+  .pill{font-size:12px;font-weight:600;background:var(--card);border-radius:999px;padding:8px 12px;white-space:nowrap}
+  main{flex:1 1 auto;overflow-y:auto;padding:4px 20px 20px}
+  .screen{display:none;flex-direction:column;gap:14px;animation:fade .25s ease}
+  .screen.on{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.4px}
+  .card{background:var(--card);border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .dark{background:var(--ink);color:#fff}
+  .soft{color:#C9D2E3}
+  .muted{color:var(--muted)}
+  .lbl{font-size:12px;font-weight:600;color:var(--muted)}
+  .big{font-size:44px;font-weight:800;letter-spacing:-1px;line-height:1}
+  .num{font-size:22px;font-weight:800}
+  .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .bar{height:8px;background:#2C3A57;border-radius:999px;overflow:hidden}
+  .bar>i{display:block;height:8px;width:40%;background:var(--amber);border-radius:999px}
+  .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .alert{background:var(--alert-soft)}
+  .alert h2{margin:0;font-size:16px;font-weight:800;color:var(--alert);display:flex;align-items:center;gap:10px}
+  p{margin:0;font-size:14px;line-height:1.45}
+  .inner{background:#fff;border-radius:16px;padding:14px}
+  .btn{height:48px;border:none;border-radius:14px;background:var(--ink);color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  .tile{background:var(--card);border:none;border-radius:20px;padding:16px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:6px}
+  .tile:hover,.btn:hover{filter:brightness(.97)}
+  .tile b{font-size:18px;font-weight:800}
+  .tile span{font-size:12px;color:var(--muted)}
+  .seg{background:#E4E8EE;border-radius:14px;padding:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .seg button{height:44px;border:none;border-radius:11px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink)}
+  .chart{position:relative;display:flex;align-items:flex-end;border-bottom:1px solid var(--track)}
+  .chart .ref{position:absolute;left:0;right:0;border-top:2px dashed var(--alert)}
+  .chart .b{flex:1 1 0;border-radius:4px 4px 0 0;position:relative;transition:height .4s ease}
+  .chart .b[data-tip]:hover::after{
+    content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;font-size:11px;font-weight:700;padding:4px 7px;border-radius:7px;white-space:nowrap;z-index:2
+  }
+  .labels{display:flex;gap:6px}
+  .labels span{flex:1 1 0;text-align:center;font-size:11px;font-weight:600;color:var(--muted)}
+  .legend{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .legend i{width:16px;border-top:2px dashed var(--alert)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips span{background:#fff;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:600}
+  .scale{position:relative;height:64px}
+  .scale .track{position:absolute;left:0;right:0;top:28px;height:10px;border-radius:999px;background:var(--line)}
+  .scale .tick{position:absolute;top:18px;height:30px;border-left:2px solid}
+  .scale .me{position:absolute;top:21px;width:24px;height:24px;margin-left:-12px;border-radius:999px;background:var(--amber);border:3px solid var(--ink)}
+  .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .grid3 div{display:flex;flex-direction:column;gap:2px}
+  .grid3 small{font-size:12px;font-weight:700}
+  .grid3 b{font-size:17px;font-weight:800}
+  .tip{display:flex;gap:12px;align-items:flex-start}
+  .tip span{width:28px;height:28px;flex:0 0 28px;border-radius:999px;background:var(--amber-soft);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+  .note{display:flex;gap:10px;align-items:flex-start;padding:0 4px;font-size:12px;line-height:1.5;color:var(--muted)}
+  .badge{display:flex;align-items:center;gap:6px;background:var(--blue-soft);color:var(--blue);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700}
+  .lines{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+  .lines div{display:flex;justify-content:space-between;font-size:14px}
+  .lines b{font-weight:700}
+  input[type=range]{width:100%;height:44px;accent-color:var(--amber);cursor:pointer}
+  .msg{border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.45;font-weight:600;color:var(--ink)}
+  nav{background:#fff;padding:8px 12px 18px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;border-top:1px solid var(--line)}
+  nav button{height:56px;border:none;border-radius:16px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:700;background:transparent;color:var(--muted)}
+  nav button.on{background:var(--amber-soft);color:var(--ink)}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="caption">Chispa · prototipo de la app del cliente · Metodología de Investigación en Ing. · 1SF242</div>
+
+<div class="phone">
+  <header>
+    <div class="brand">
+      <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#13213C" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
+      <div><b>Chispa</b><small>Mi casa · Naturgy (EDEMET)</small></div>
+    </div>
+    <div class="pill">21 oct – 19 nov</div>
+  </header>
+
+  <main>
+    <!-- INICIO -->
+    <section class="screen on" id="s-inicio" aria-label="Inicio">
+      <div class="card dark" style="padding:20px;gap:14px">
+        <span class="soft" style="font-size:13px;font-weight:600">Factura estimada al cierre</span>
+        <span class="big">B/. 64,96</span>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="bar"><i></i></div>
+          <div class="row soft" style="font-size:12px;font-weight:500"><span>Día 12 de 30</span><span>Llevas 156 kWh · 13,0 kWh/día</span></div>
+        </div>
+      </div>
+
+      <div class="card alert">
+        <h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A3400A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>Vas camino a pasar los 300 kWh</h2>
+        <p>A este ritmo cerrarás en <b>390 kWh</b> y perderás la mayor parte del subsidio del FET.</p>
+        <div class="inner grid2" style="gap:10px">
+          <div><div class="lbl">Límite diario</div><div class="num">8,0 kWh</div><div class="lbl" style="font-weight:500">los próximos 18 días</div></div>
+          <div><div class="lbl">Te ahorrarías</div><div class="num" style="color:var(--blue)">B/. 30,27</div><div class="lbl" style="font-weight:500">pagarías B/. 34,69</div></div>
+        </div>
+        <button class="btn" data-go="comparar">Ver cómo lograrlo</button>
+      </div>
+
+      <div class="grid2">
+        <button class="tile" data-go="consumo"><span style="font-weight:600">Frente al mes pasado</span><b>Estable</b><span>−2 % por día</span></button>
+        <button class="tile" data-go="comparar"><span style="font-weight:600">Hogares similares</span><b>En el promedio</b><span>un poco por encima</span></button>
+      </div>
+    </section>
+
+    <!-- CONSUMO -->
+    <section class="screen" id="s-consumo" aria-label="Consumo">
+      <h1>Tu consumo</h1>
+      <div class="seg" role="tablist">
+        <button class="on" data-vista="ciclo" role="tab">Este ciclo</button>
+        <button data-vista="meses" role="tab">12 meses</button>
+      </div>
+
+      <div id="v-ciclo" style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="row"><span style="font-size:14px;font-weight:700">kWh por día</span><span class="lbl" style="font-weight:500">Actualizado hoy, 6:00 a. m.</span></div>
+          <div class="chart" id="chart-dias" style="height:130px;gap:3px"></div>
+          <div class="legend"><i></i><span>10 kWh/día: el ritmo que te deja en 300 kWh</span></div>
+        </div>
+        <div class="grid2">
+          <div class="card" style="gap:4px;border-radius:20px;padding:16px"><span class="lbl">Promedio</span><span class="num">13,0 kWh</span><span class="lbl" style="font-weight:500">por día</span></div>
+          <div class="card" style="gap:4px;border-radius:20px;padding:16px"><span class="lbl">Día más alto</span><span class="num">15,1 kWh</span><span class="lbl" style="font-weight:500">viernes 30 oct</span></div>
+        </div>
+      </div>
+
+      <div id="v-meses" style="display:none;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="row"><span style="font-size:14px;font-weight:700">kWh por factura</span><span class="lbl" style="font-weight:500">nov 2025 – oct 2026</span></div>
+          <div class="chart" id="chart-meses" style="height:140px;gap:6px"></div>
+          <div class="labels" id="lab-meses"></div>
+          <div class="legend"><i></i><span>300 kWh: límite del subsidio FET</span></div>
+        </div>
+        <div class="card alert" style="gap:4px;border-radius:20px;padding:16px">
+          <span style="font-size:15px;font-weight:800;color:var(--alert)">7 facturas seguidas sobre 300 kWh</span>
+          <span style="font-size:13px;line-height:1.45">Desde abril pagas sin el subsidio completo. Tu mes más alto fue agosto, con 498 kWh.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARAR -->
+    <section class="screen" id="s-comparar" aria-label="Comparar">
+      <h1>Hogares como el tuyo</h1>
+      <div class="chips"><span>3–4 personas</span><span>Con aire acondicionado</span><span>Apartamento</span></div>
+      <div class="card" style="padding:20px;gap:16px">
+        <span style="font-size:20px;font-weight:800;line-height:1.3">Estás en el promedio, un poco por encima</span>
+        <span class="muted" style="font-size:14px;line-height:1.45">A este ritmo consumirás más que 65 de cada 100 hogares parecidos al tuyo.</span>
+        <div class="scale" aria-hidden="true">
+          <div class="track"></div>
+          <div class="tick" style="left:39%;border-color:var(--blue)"></div>
+          <div class="tick" style="left:55%;border-color:var(--muted)"></div>
+          <div class="me" style="left:65%"></div>
+        </div>
+        <div class="grid3">
+          <div><small style="color:var(--blue)">Más eficientes</small><b>232 kWh</b></div>
+          <div><small class="muted">Promedio</small><b>330 kWh</b></div>
+          <div><small>Tú (proyección)</small><b>390 kWh</b></div>
+        </div>
+      </div>
+      <div class="card" style="padding:20px;gap:14px">
+        <span style="font-size:16px;font-weight:800">Qué puedes hacer esta semana</span>
+        <div class="tip"><span>1</span><p>Programa el aire acondicionado a 24 °C o más y apágalo al salir.</p></div>
+        <div class="tip"><span>2</span><p>Desconecta por la noche los equipos que quedan en espera.</p></div>
+        <div class="tip"><span>3</span><p>Revisa que la puerta de la refrigeradora cierre bien.</p></div>
+      </div>
+      <div class="note">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6577" stroke-width="2" stroke-linejoin="round" aria-hidden="true" style="flex:0 0 18px;margin-top:1px"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/></svg>
+        <span>Nunca ves el consumo de otro hogar: solo promedios de grupos de 10 hogares o más.</span>
+      </div>
+    </section>
+
+    <!-- FACTURA -->
+    <section class="screen" id="s-factura" aria-label="Factura">
+      <h1>Tu factura</h1>
+      <div class="card" style="padding:20px;gap:14px">
+        <div class="row" style="align-items:flex-start">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span class="lbl">Octubre · 426 kWh · 32 días</span>
+            <span style="font-size:30px;font-weight:800;letter-spacing:-.5px">B/. 71,73</span>
+          </div>
+          <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D5FA8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"/></svg>Verificada</span>
+        </div>
+        <div class="lines">
+          <div><span>Cargo fijo</span><b>3,17</b></div>
+          <div><span>Energía</span><b>80,31</b></div>
+          <div><span>Combustible</span><b>−3,76</b></div>
+          <div><span>Subsidio FET (8,97 %)</span><b style="color:var(--blue)">−7,49</b></div>
+          <div><span>Crédito alumbrado</span><b>−0,50</b></div>
+        </div>
+        <span class="lbl" style="font-weight:500;line-height:1.5">Chispa recalculó tu factura con el pliego de la ASEP y obtuvo el mismo total (B/. 0,01 de diferencia por redondeo).</span>
+      </div>
+
+      <div class="card dark" style="padding:20px;gap:14px">
+        <label for="sim" style="font-size:15px;font-weight:800">¿Cuánto pagaría si consumo…?</label>
+        <div class="row">
+          <span id="sim-total" style="font-size:36px;font-weight:800;letter-spacing:-.8px">B/. 64,96</span>
+          <span id="sim-kwh" class="soft" style="font-size:16px;font-weight:700">390 kWh</span>
+        </div>
+        <input id="sim" type="range" min="150" max="550" step="1" value="390">
+        <div class="row soft" style="font-size:12px"><span>150 kWh</span><span>550 kWh</span></div>
+        <div id="sim-msg" class="msg"></div>
+      </div>
+      <span class="lbl" style="font-weight:500;padding:0 4px">Tarifa EDEMET (Naturgy) · pliego ASEP sep–dic 2026 · ciclo de 30 días.</span>
+    </section>
+  </main>
+
+  <nav aria-label="Secciones">
+    <button class="on" data-go="inicio"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
+    <button data-go="consumo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M11 20V5M17 20v-7M3 20h18"/></svg>Consumo</button>
+    <button data-go="comparar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.9.7 3.1 2.5 3.5 5.2"/></svg>Comparar</button>
+    <button data-go="factura"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>Factura</button>
+  </nav>
+</div>
+
+<div class="caption" style="font-weight:500">El ciclo actual usa datos de ejemplo. Historial y factura de octubre: datos reales anonimizados.</div>
+
+<script>
+(function () {
+  // ---------- navegación ----------
+  var main = document.querySelector('main');
+  function ir(tab) {
+    document.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('on', s.id === 's-' + tab); });
+    document.querySelectorAll('nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.go === tab); });
+    main.scrollTop = 0;
+  }
+  document.querySelectorAll('[data-go]').forEach(function (b) {
+    b.addEventListener('click', function () { ir(b.dataset.go); });
+  });
+
+  // ---------- vistas de consumo ----------
+  document.querySelectorAll('[data-vista]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.dataset.vista;
+      document.querySelectorAll('[data-vista]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      document.getElementById('v-ciclo').style.display = v === 'ciclo' ? 'flex' : 'none';
+      document.getElementById('v-meses').style.display = v === 'meses' ? 'flex' : 'none';
+    });
+  });
+
+  function fmt(x) { return x.toFixed(2).replace('.', ','); }
+  function fmt1(x) { return x.toFixed(1).replace('.', ','); }
+
+  // ---------- gráfica diaria (12 días medidos de 30) ----------
+  var medidos = [11.8, 12.4, 13.9, 14.6, 12.1, 11.5, 12.0, 12.7, 13.2, 15.1, 14.4, 12.3];
+  var inicio = new Date(2026, 9, 21);
+  var cd = document.getElementById('chart-dias');
+  var ref = document.createElement('div'); ref.className = 'ref'; ref.style.bottom = (10 * 7.5) + 'px'; cd.appendChild(ref);
+  for (var i = 0; i < 30; i++) {
+    var b = document.createElement('div'); b.className = 'b';
+    if (i < medidos.length) {
+      b.style.height = Math.round(medidos[i] * 7.5) + 'px';
+      b.style.background = i === medidos.length - 1 ? '#FFC233' : '#13213C';
+      var f = new Date(inicio); f.setDate(inicio.getDate() + i);
+      b.dataset.tip = f.getDate() + '/' + (f.getMonth() + 1) + ': ' + fmt1(medidos[i]) + ' kWh';
+    } else {
+      b.style.height = '6px'; b.style.background = '#D5DAE2';
+    }
+    cd.appendChild(b);
+  }
+
+  // ---------- gráfica mensual (historial real) ----------
+  var hist = [['N',139,'nov 25'],['D',81,'dic 25'],['E',37,'ene 26'],['F',149,'feb 26'],['M',197,'mar 26'],['A',351,'abr 26'],
+              ['M',337,'may 26'],['J',358,'jun 26'],['J',470,'jul 26'],['A',498,'ago 26'],['S',387,'sep 26'],['O',426,'oct 26']];
+  var cm = document.getElementById('chart-meses'), lm = document.getElementById('lab-meses');
+  var ref2 = document.createElement('div'); ref2.className = 'ref'; ref2.style.bottom = Math.round(300 * 0.28) + 'px'; cm.appendChild(ref2);
+  hist.forEach(function (m) {
+    var b = document.createElement('div'); b.className = 'b';
+    b.style.height = Math.round(m[1] * 0.28) + 'px';
+    b.style.background = m[1] > 300 ? '#E07A2E' : '#1D5FA8';
+    b.style.borderRadius = '5px 5px 0 0';
+    b.dataset.tip = m[2] + ': ' + m[1] + ' kWh';
+    cm.appendChild(b);
+    var s = document.createElement('span'); s.textContent = m[0]; lm.appendChild(s);
+  });
+
+  // ---------- motor tarifario EDEMET (pliego ASEP sep–dic 2026, ciclo de 30 días) ----------
+  var FET = [[0,10,.446],[11,50,.4868],[51,100,.4094],[101,150,.3062],[151,200,.3093],[201,250,.311],[251,300,.3121],
+             [301,350,.103],[351,400,.0897],[401,450,.0804],[451,500,.0735],[501,600,.0681],[601,700,.0605],[701,750,.0552]];
+  function factura(k) {
+    var bruto = 3.17 + Math.max(0, Math.min(k, 300) - 10) * 0.17624
+              + Math.max(0, Math.min(k, 750) - 300) * 0.23177 + Math.max(0, k - 750) * 0.25027;
+    var d = 0;
+    FET.forEach(function (r) { if (k >= r[0] && k <= r[1]) d = r[2]; });
+    return { neto: bruto * (1 - d) - 0.00882 * k, fet: d };
+  }
+
+  var sim = document.getElementById('sim');
+  var tot = document.getElementById('sim-total'), kw = document.getElementById('sim-kwh'), msg = document.getElementById('sim-msg');
+  function actualizar() {
+    var k = Number(sim.value), f = factura(k), f300 = factura(300);
+    tot.textContent = 'B/. ' + fmt(f.neto);
+    kw.textContent = k + ' kWh';
+    if (k <= 300) {
+      msg.style.background = '#E5EEF8';
+      msg.textContent = 'Con subsidio FET de ' + Math.round(f.fet * 100) + ' %. Estás dentro del límite de 300 kWh.';
+    } else {
+      msg.style.background = '#FFF1E6';
+      msg.textContent = 'Subsidio FET de solo ' + Math.round(f.fet * 100) + ' %. Si bajaras a 300 kWh pagarías B/. '
+        + fmt(f300.neto) + ' (B/. ' + fmt(f.neto - f300.neto) + ' menos).';
+    }
+  }
+  sim.addEventListener('input', actualizar);
+  actualizar();
+})();
+</script>
+</body>
+</html>
